@@ -14,36 +14,28 @@ jobs:
     runs-on: ubuntu-latest
     if: github.actor != 'github-classroom[bot]'
 
-    # ⭐ 重要: R_LIBS_USER をジョブ全体の env に設定
-    # こうすることで、install.packages() が入れる先と、後続の
-    # autograding ステップの R セッションが同じ lib path を共有する
-    env:
-      R_LIBS_USER: /home/runner/work/_R_libs
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      # R ライブラリ用のディレクトリを作成
-      - name: Create R library directory
-        run: mkdir -p ${{ env.R_LIBS_USER }}
 
       - name: Set up R
         uses: r-lib/actions/setup-r@v2
         with:
           use-public-rspm: true
 
-      # tidyverse のインストール（バイナリ版を使用するので 30〜60 秒）
-      - name: Install R dependencies
+      # ⭐ 重要: sudo + lib=.Library でシステムライブラリにインストール
+      # こうすると /opt/R/X.X.X/lib/R/library に保存され、
+      # 全てのRセッション(autograding含む)で必ず見つかる
+      - name: Install tidyverse to system library
         shell: bash
         run: |
-          Rscript -e 'install.packages("tidyverse")'
+          sudo Rscript -e 'options(repos = c(CRAN = "https://packagemanager.posit.co/cran/__linux__/noble/latest")); install.packages("tidyverse", lib = .Library)'
 
-      # ⭐ 検証ステップ: tidyverse が読み込めることを確認
+      # 検証ステップ: tidyverse が読み込めることを確認
       - name: Verify tidyverse is available
         shell: bash
         run: |
-          Rscript -e 'cat("libPaths:\n"); print(.libPaths()); library(tidyverse); cat("\ntidyverse OK:", as.character(packageVersion("tidyverse")), "\n")'
+          Rscript -e 'cat("libPaths:\n"); print(.libPaths()); cat("\ntidyverse location:", find.package("tidyverse"), "\n"); library(tidyverse); cat("tidyverse OK:", as.character(packageVersion("tidyverse")), "\n")'
 
       # ============================================
       # Q1a df1 の構造(行数・列名)
