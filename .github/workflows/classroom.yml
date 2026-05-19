@@ -1,0 +1,286 @@
+name: Autograding Tests
+
+on:
+  - push
+  - workflow_dispatch
+
+permissions:
+  checks: write
+  actions: read
+  contents: read
+
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v2
+
+      - name: Install R dependencies
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          packages: tidyverse
+
+      # ============================================
+      # Q1a df1 の構造（行数・列名）
+      # ============================================
+      - name: Q1a df1 structure
+        id: q1a
+        continue-on-error: true
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: Q1a df1 structure
+          command: >
+            Rscript -e "source('HW3.R');
+            req <- c('year','prefecture','pop','university','highschool','juniorhigh','elementary');
+            if (!exists('df1') || !is.data.frame(df1) || nrow(df1)!=564 ||
+                !all(req %in% names(df1)))
+              quit(status=1)"
+          max-score: 1
+
+      # ============================================
+      # Q1b df1 の内容（平均値）
+      # ============================================
+      - name: Q1b df1 values
+        id: q1b
+        continue-on-error: true
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: Q1b df1 values
+          command: >
+            Rscript -e "source('HW3.R');
+            if (!exists('df1')) quit(status=1);
+            if (abs(mean(df1[['pop']],        na.rm=TRUE) - 2690688) >= 1   ||
+                abs(mean(df1[['university']], na.rm=TRUE) - 16.78)   >= 0.01 ||
+                abs(mean(df1[['highschool']], na.rm=TRUE) - 104.37)  >= 0.01 ||
+                abs(mean(df1[['juniorhigh']], na.rm=TRUE) - 219.4)   >= 0.1  ||
+                abs(mean(df1[['elementary']], na.rm=TRUE) - 427.5)   >= 0.1)
+              quit(status=1)"
+          max-score: 1
+
+      # ============================================
+      # Q2a df2（2018年以降）の構造
+      # ============================================
+      - name: Q2a df2 structure
+        id: q2a
+        continue-on-error: true
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: Q2a df2 structure
+          command: >
+            Rscript -e "source('HW3.R');
+            if (!exists('df2') || !is.data.frame(df2) || nrow(df2)!=282 ||
+                !all(df2[['year']] >= 2018))
+              quit(status=1)"
+          max-score: 1
+
+      # ============================================
+      # Q2b df2 の内容（平均値）
+      # ============================================
+      - name: Q2b df2 values
+        id: q2b
+        continue-on-error: true
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: Q2b df2 values
+          command: >
+            Rscript -e "source('HW3.R');
+            if (!exists('df2')) quit(status=1);
+            if (abs(mean(df2[['pop']],        na.rm=TRUE) - 2674639) >= 1   ||
+                abs(mean(df2[['university']], na.rm=TRUE) - 16.96)   >= 0.01 ||
+                abs(mean(df2[['highschool']], na.rm=TRUE) - 103.3)   >= 0.1 ||
+                abs(mean(df2[['juniorhigh']], na.rm=TRUE) - 215.1)   >= 0.1 ||
+                abs(mean(df2[['elementary']], na.rm=TRUE) - 413.6)   >= 0.1)
+              quit(status=1)"
+          max-score: 1
+
+      # ============================================
+      # Q3a df3（東北6県）の構造
+      # ============================================
+      - name: Q3a df3 structure
+        id: q3a
+        continue-on-error: true
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: Q3a df3 structure
+          command: >
+            Rscript -e "source('HW3.R');
+            tohoku <- enc2utf8(c('青森県','岩手県','宮城県','秋田県','山形県','福島県'));
+            if (!exists('df3') || !is.data.frame(df3) || nrow(df3)!=36) quit(status=1);
+            pref <- enc2utf8(as.character(df3[['prefecture']]));
+            if (!all(pref %in% tohoku) || length(unique(pref))!=6)
+              quit(status=1)"
+          max-score: 1
+
+      # ============================================
+      # Q3b df3 の内容（平均値）
+      # ============================================
+      - name: Q3b df3 values
+        id: q3b
+        continue-on-error: true
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: Q3b df3 values
+          command: >
+            Rscript -e "source('HW3.R');
+            if (!exists('df3')) quit(status=1);
+            if (abs(mean(df3[['pop']],        na.rm=TRUE) - 1426200) >= 1   ||
+                abs(mean(df3[['university']], na.rm=TRUE) - 8.528)   >= 0.01 ||
+                abs(mean(df3[['highschool']], na.rm=TRUE) - 77.94)   >= 0.01 ||
+                abs(mean(df3[['juniorhigh']], na.rm=TRUE) - 158.1)   >= 0.1 ||
+                abs(mean(df3[['elementary']], na.rm=TRUE) - 297.6)   >= 0.1)
+              quit(status=1)"
+          max-score: 1
+
+      # ============================================
+      # Q4a df4 のrate変数（存在確認）
+      # ============================================
+      - name: Q4a df4 rate columns
+        id: q4a
+        continue-on-error: true
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: Q4a df4 rate columns
+          command: >
+            Rscript -e "source('HW3.R');
+            req <- c('elementary_rate','juniorhigh_rate','highschool_rate','university_rate');
+            if (!exists('df4') || !is.data.frame(df4) || nrow(df4)!=36 ||
+                !all(req %in% names(df4)))
+              quit(status=1)"
+          max-score: 1
+
+      # ============================================
+      # Q4b df4 のrate変数（計算式の正確性）
+      # ============================================
+      - name: Q4b df4 rate calculation
+        id: q4b
+        continue-on-error: true
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: Q4b df4 rate calculation
+          command: >
+            Rscript -e "source('HW3.R');
+            if (!exists('df4')) quit(status=1);
+            if (!isTRUE(all.equal(df4[['elementary_rate']], df4[['elementary']] / df4[['pop']] * 100000)) ||
+                !isTRUE(all.equal(df4[['juniorhigh_rate']], df4[['juniorhigh']] / df4[['pop']] * 100000)) ||
+                !isTRUE(all.equal(df4[['highschool_rate']], df4[['highschool']] / df4[['pop']] * 100000)) ||
+                !isTRUE(all.equal(df4[['university_rate']], df4[['university']] / df4[['pop']] * 100000)))
+              quit(status=1)"
+          max-score: 1
+
+      # ============================================
+      # Q5a df5（都道府県ごとの平均）の構造
+      # ============================================
+      - name: Q5a df5 structure
+        id: q5a
+        continue-on-error: true
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: Q5a df5 structure
+          command: >
+            Rscript -e "source('HW3.R');
+            req <- c('prefecture','elementary_mean','juniorhigh_mean','highschool_mean','university_mean');
+            if (!exists('df5') || !is.data.frame(df5) || nrow(df5)!=6 ||
+                !all(req %in% names(df5)))
+              quit(status=1)"
+          max-score: 1
+
+      # ============================================
+      # Q5b df5 の集計値
+      # ============================================
+      - name: Q5b df5 values
+        id: q5b
+        continue-on-error: true
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: Q5b df5 values
+          command: >
+            Rscript -e "source('HW3.R');
+            if (!exists('df5')) quit(status=1);
+            if (abs(mean(df5[['elementary_mean']]) - 21.34)  >= 0.01 ||
+                abs(mean(df5[['juniorhigh_mean']]) - 11.290) >= 0.01 ||
+                abs(mean(df5[['highschool_mean']]) - 5.641)  >= 0.01 ||
+                abs(mean(df5[['university_mean']]) - 0.6138) >= 0.001)
+              quit(status=1)"
+          max-score: 1
+
+      # ============================================
+      # Q6a df6（都道府県ごとの合計）の構造
+      # ============================================
+      - name: Q6a df6 structure
+        id: q6a
+        continue-on-error: true
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: Q6a df6 structure
+          command: >
+            Rscript -e "source('HW3.R');
+            req <- c('prefecture','elementary_total','juniorhigh_total','highschool_total','university_total');
+            if (!exists('df6') || !is.data.frame(df6) || nrow(df6)!=6 ||
+                !all(req %in% names(df6)))
+              quit(status=1)"
+          max-score: 1
+
+      # ============================================
+      # Q6b df6 の集計値
+      # ============================================
+      - name: Q6b df6 values
+        id: q6b
+        continue-on-error: true
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: Q6b df6 values
+          command: >
+            Rscript -e "source('HW3.R');
+            if (!exists('df6')) quit(status=1);
+            if (abs(mean(df6[['elementary_total']]) - 1786)  >= 1   ||
+                abs(mean(df6[['juniorhigh_total']]) - 948.8) >= 0.1 ||
+                abs(mean(df6[['highschool_total']]) - 467.7) >= 0.1 ||
+                abs(mean(df6[['university_total']]) - 51.17) >= 0.01)
+              quit(status=1)"
+          max-score: 1
+
+      # ============================================
+      # Q7 rank_df（大学数の高い順にソート）
+      # ============================================
+      - name: Q7 rank_df sort order
+        id: q7
+        continue-on-error: true
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: Q7 rank_df sort order
+          command: >
+            Rscript -e "source('HW3.R');
+            if (!exists('rank_df') || !is.data.frame(rank_df) || nrow(rank_df)!=6 ||
+                !('university_mean' %in% names(rank_df)) ||
+                is.unsorted(-rank_df[['university_mean']]))
+              quit(status=1)"
+          max-score: 1
+
+      # ============================================
+      # Reporter（採点結果のレポート）
+      # ============================================
+      - name: Autograding Reporter
+        continue-on-error: true
+        uses: classroom-resources/autograding-grading-reporter@v1
+        env:
+          Q1A_RESULTS: "${{ steps.q1a.outputs.result }}"
+          Q1B_RESULTS: "${{ steps.q1b.outputs.result }}"
+          Q2A_RESULTS: "${{ steps.q2a.outputs.result }}"
+          Q2B_RESULTS: "${{ steps.q2b.outputs.result }}"
+          Q3A_RESULTS: "${{ steps.q3a.outputs.result }}"
+          Q3B_RESULTS: "${{ steps.q3b.outputs.result }}"
+          Q4A_RESULTS: "${{ steps.q4a.outputs.result }}"
+          Q4B_RESULTS: "${{ steps.q4b.outputs.result }}"
+          Q5A_RESULTS: "${{ steps.q5a.outputs.result }}"
+          Q5B_RESULTS: "${{ steps.q5b.outputs.result }}"
+          Q6A_RESULTS: "${{ steps.q6a.outputs.result }}"
+          Q6B_RESULTS: "${{ steps.q6b.outputs.result }}"
+          Q7_RESULTS:  "${{ steps.q7.outputs.result }}"
+        with:
+          runners: q1a,q1b,q2a,q2b,q3a,q3b,q4a,q4b,q5a,q5b,q6a,q6b,q7
