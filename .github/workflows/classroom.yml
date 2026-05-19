@@ -18,13 +18,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # --- R 環境のセットアップ ---
+      # use-public-rspm: true を指定すると Posit Package Manager の
+      # Linux 用バイナリ版を自動的に repos に設定するため、
+      # tidyverse のインストールが数十秒で完了する。
       - name: Set up R
         uses: r-lib/actions/setup-r@v2
-
-      - name: Install R dependencies
-        uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          packages: tidyverse
+          use-public-rspm: true
+
+      # --- パッケージのインストール ---
+      # install.packages() で直接インストール。
+      # use-public-rspm の効果でバイナリ版が使われ高速。
+      - name: Install R dependencies
+        run: |
+          install.packages("tidyverse")
+        shell: Rscript {0}
 
       # ============================================
       # Q1a df1 の構造（行数・列名）
@@ -118,7 +127,7 @@ jobs:
           max-score: 1
 
       # ============================================
-      # Q3b df3 の内容（平均値）
+      # Q3b df3 の内容(平均値)
       # ============================================
       - name: Q3b df3 values
         id: q3b
@@ -138,7 +147,7 @@ jobs:
           max-score: 1
 
       # ============================================
-      # Q4a df4 のrate変数（存在確認）
+      # Q4a df4 のrate変数(存在確認)
       # ============================================
       - name: Q4a df4 rate columns
         id: q4a
@@ -155,7 +164,7 @@ jobs:
           max-score: 1
 
       # ============================================
-      # Q4b df4 のrate変数（計算式の正確性）
+      # Q4b df4 のrate変数(計算式の正確性)
       # ============================================
       - name: Q4b df4 rate calculation
         id: q4b
@@ -174,7 +183,7 @@ jobs:
           max-score: 1
 
       # ============================================
-      # Q5a df5（都道府県ごとの平均）の構造
+      # Q5a df5(都道府県ごとの平均)の構造
       # ============================================
       - name: Q5a df5 structure
         id: q5a
@@ -210,7 +219,7 @@ jobs:
           max-score: 1
 
       # ============================================
-      # Q6a df6（都道府県ごとの合計）の構造
+      # Q6a df6(都道府県ごとの合計)の構造
       # ============================================
       - name: Q6a df6 structure
         id: q6a
@@ -246,7 +255,7 @@ jobs:
           max-score: 1
 
       # ============================================
-      # Q7 rank_df（大学数の高い順にソート）
+      # Q7 rank_df(大学数の高い順にソート)
       # ============================================
       - name: Q7 rank_df sort order
         id: q7
@@ -263,7 +272,7 @@ jobs:
           max-score: 1
 
       # ============================================
-      # Reporter（採点結果のレポート）
+      # Reporter(採点結果のレポート)
       # ============================================
       - name: Autograding Reporter
         continue-on-error: true
