@@ -121,11 +121,10 @@ jobs:
           test-name: Q3a df3 structure
           command: >
             Rscript -e "source('HW3.R');
-            tohoku <- enc2utf8(c('青森県','岩手県','宮城県','秋田県','山形県','福島県'));
-            if (!exists('df3') || !is.data.frame(df3) || nrow(df3)!=36) quit(status=1);
-            pref <- enc2utf8(as.character(df3[['prefecture']]));
-            if (!all(pref %in% tohoku) || length(unique(pref))!=6)
-              quit(status=1)"
+            tohoku <- c('R02000','R03000','R04000','R05000','R06000','R07000');
+            if (!exists('df3') || !is.data.frame(df3) || nrow(df3) != 36) quit(status=1);
+            code <- as.character(df3[['code']]);
+            if (!all(code %in% tohoku) || length(unique(code)) != 6) quit(status=1)"
           max-score: 1
 
       # ============================================
